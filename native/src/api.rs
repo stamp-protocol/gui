@@ -1,34 +1,32 @@
-pub enum Platform {
-    Unknown,
-    Android,
-    Ios,
-    Windows,
-    Unix,
-    MacIntel,
-    MacApple,
-    Wasm,
-}
+use anyhow::{anyhow, Result};
+use stamp_aux;
+pub use stamp_core::{
+    dag::Transactions,
+    identity::identity::IdentityID,
+};
 
-pub fn platform() -> Platform {
-    if cfg!(windows) {
-        Platform::Windows
-    } else if cfg!(target_os = "android") {
-        Platform::Android
-    } else if cfg!(target_os = "ios") {
-        Platform::Ios
-    } else if cfg!(target_arch = "aarch64-apple-darwin") {
-        Platform::MacApple
-    } else if cfg!(target_os = "macos") {
-        Platform::MacIntel
-    } else if cfg!(target_family = "wasm") {
-        Platform::Wasm
-    } else if cfg!(unix) {
-        Platform::Unix
-    } else {
-        Platform::Unknown
+pub fn get_built_identity_by_id(id: String) -> Result<String> {
+    let identities = stamp_aux::db::load_identities_by_prefix(&id)
+        .map_err(|e| anyhow!("error finding identity: {}", e))?;
+    if identities.len() == 0 {
+        Err(anyhow!("identity {} not found", id))?;
     }
+    let built = identities[0].build_identity()
+        .map_err(|e| anyhow!("error building identity: {}", e))?;
+    serde_json::to_string(&built).map_err(|e| anyhow!("JSON error: {}", e))
 }
 
-pub fn rust_release_mode() -> bool {
-    cfg!(not(debug_assertions))
+pub fn list_local_identities_built(search: Option<String>) -> Result<String> {
+    let identities = stamp_aux::db::list_local_identities(search.as_ref().map(|x| x.as_str()))
+        .map_err(|e| anyhow!("error listing identities: {}", e))?;
+    let built = identities
+        .iter()
+        .map(|transactions| {
+            transactions
+                .build_identity()
+                .map_err(|e| anyhow!("error building identity: {}", e))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    serde_json::to_string(&built).map_err(|e| anyhow!("JSON error: {}", e))
 }
+
