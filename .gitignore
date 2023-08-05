@@ -1,0 +1,6 @@
+/dist/
+/target/
+/Cargo.lock
+/play
+/node_modules
+/.vscode
