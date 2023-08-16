@@ -1,10 +1,11 @@
 pub mod components;
+pub mod error;
 pub mod models;
 
-use leptos::*;
 use crate::components::app::App;
+use leptos::*;
 
 fn main() {
-    mount_to_body(|cx| view! { cx, <App/> })
+    mount_to_body(|| view! { <App /> })
 }
 

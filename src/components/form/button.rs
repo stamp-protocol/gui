@@ -10,7 +10,6 @@ pub enum ButtonType {
 
 #[component]
 pub fn Button(
-    cx: Scope,
     children: Children,
     #[prop(default = ButtonType::Filled)]
     ty: ButtonType,
@@ -35,12 +34,12 @@ pub fn Button(
     let classname = format!("cursor-pointer flex items-center px-4 py-2 rounded font-semibold transition-all outline-none  {} {}", style, class);
     let icon_view = move || {
         if icon != "" {
-            Some(view!{ cx, <Icon name=&icon class=&icon_class />})
+            Some(view!{ <Icon name=&icon class=&icon_class /> })
         } else {
             None
         }
     };
-    view! { cx,
+    view! {
         <button
             type={btn_type}
             class=classname
@@ -48,7 +47,7 @@ pub fn Button(
             disabled=disabled
         >
             {icon_view}
-            <div class="relative">{children(cx)}</div>
+            <div class="relative">{children()}</div>
         </button>
     }
 }
